@@ -69,6 +69,13 @@
                 </button>
             </div>
 
+            <!-- Botón de Reseñas de Google Maps -->
+            <div id="box-google" class="hidden mb-3">
+                <a id="link-google" href="#" target="_blank" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-sky-950 transition flex items-center justify-center gap-2 text-xs">
+                    ⭐ ¡Déjanos una Reseña en Google!
+                </a>
+            </div>
+
             <!-- Botón de WhatsApp -->
             <div id="box-whatsapp" class="hidden mb-4">
                 <a id="link-whatsapp" href="#" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-emerald-950 transition flex items-center justify-center gap-2 text-xs">
@@ -85,12 +92,10 @@
         </div>
     </div>
 
-    <!-- Modal Dinámico Personalizado (Reemplaza los aburridos alerts) -->
+    <!-- Modal Dinámico Personalizado -->
     <div id="modal-notificacion" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center p-4 z-50">
         <div class="w-full max-w-sm bg-slate-900 border border-slate-700/80 rounded-3xl p-6 text-center shadow-2xl transform transition-all scale-95 opacity-0" id="modal-content">
-            <div id="modal-icon-container" class="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg">
-                <!-- Icono dinámico del modal -->
-            </div>
+            <div id="modal-icon-container" class="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg"></div>
             <h3 id="modal-titulo" class="text-lg font-extrabold text-white mb-2">Título</h3>
             <p id="modal-mensaje" class="text-xs text-slate-300 mb-6 leading-relaxed">Mensaje descriptivo...</p>
             <button onclick="cerrarModal()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg shadow-indigo-600/30 cursor-pointer">
@@ -125,6 +130,9 @@
         
         <label class="text-[11px] font-semibold text-slate-300">WhatsApp del Negocio (Ej: 51999999999):</label>
         <input type="text" id="gen-whatsapp" placeholder="51999999999" class="w-full bg-slate-950 border border-slate-800 text-white p-2.5 rounded-xl mb-3 text-xs focus:border-amber-500 outline-none">
+
+        <label class="text-[11px] font-semibold text-slate-300">Enlace de Reseñas Google Maps (URL):</label>
+        <input type="text" id="gen-google" placeholder="https://g.page/r/... o enlace de Google Maps" class="w-full bg-slate-950 border border-slate-800 text-white p-2.5 rounded-xl mb-3 text-xs focus:border-amber-500 outline-none">
 
         <div class="flex gap-2 mb-4">
             <div class="w-1/2">
@@ -162,6 +170,7 @@
             nombre: decodeURIComponent(params.get("nombre") || "Establecimiento VIP"),
             rubro: decodeURIComponent(params.get("rubro") || "Restaurantes"),
             whatsapp: params.get("whatsapp") || "",
+            google: decodeURIComponent(params.get("google") || ""),
             maxSellos: parseInt(params.get("max")) || 6,
             premio: decodeURIComponent(params.get("premio") || "¡Beneficio Especial!"),
             color: params.get("color") || "bg-indigo-600"
@@ -177,12 +186,12 @@
             document.getElementById("gen-nombre").value = negocioConfig.nombre;
             document.getElementById("gen-rubro").value = negocioConfig.rubro;
             document.getElementById("gen-whatsapp").value = negocioConfig.whatsapp;
+            document.getElementById("gen-google").value = negocioConfig.google !== "null" ? negocioConfig.google : "";
             document.getElementById("gen-premio").value = negocioConfig.premio;
             document.getElementById("gen-max").value = negocioConfig.maxSellos;
             document.getElementById("gen-color").value = negocioConfig.color;
         }
 
-        // Sistema de Modales Flotantes Estilizados
         function mostrarModal(tipo, titulo, mensaje) {
             const modal = document.getElementById("modal-notificacion");
             const content = document.getElementById("modal-content");
@@ -193,7 +202,6 @@
             titleEl.innerText = titulo;
             msgEl.innerText = mensaje;
 
-            // Configurar icono y color según el tipo de alerta
             if (tipo === 'success') {
                 iconContainer.className = "w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
                 iconContainer.innerHTML = `<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>`;
@@ -224,7 +232,6 @@
             }, 200);
         }
 
-        // Mapeo de íconos SVG corporativos 3D / Detallados por rubro
         function obtenerSvgRubro(rubro, completado) {
             const colorClase = completado ? "text-slate-950 drop-shadow-sm" : "text-slate-400 opacity-70";
             const r = rubro.toLowerCase();
@@ -256,9 +263,20 @@
             document.getElementById("lbl-premio-meta").innerText = `🎯 Meta: ${negocioConfig.maxSellos} sellos = ${negocioConfig.premio}`;
             document.getElementById("lbl-progreso-texto").innerText = `${sellosActuales} / ${negocioConfig.maxSellos} sellos`;
 
+            // Botón de Google Maps / Reseñas
+            const boxGoogle = document.getElementById("box-google");
+            const linkGoogle = document.getElementById("link-google");
+            if (negocioConfig.google.trim() !== "" && negocioConfig.google !== "null") {
+                linkGoogle.href = negocioConfig.google;
+                boxGoogle.classList.remove("hidden");
+            } else {
+                boxGoogle.classList.add("hidden");
+            }
+
+            // Botón de WhatsApp
             const boxWhatsapp = document.getElementById("box-whatsapp");
             const linkWhatsapp = document.getElementById("link-whatsapp");
-            if (negocioConfig.whatsapp.trim() !== "") {
+            if (negocioConfig.whatsapp.trim() !== "" && negocioConfig.whatsapp !== "null") {
                 linkWhatsapp.href = `https://wa.me/${negocioConfig.whatsapp}?text=Hola,%20vengo%20de%20mi%20tarjeta%20digital%20de%20${encodeURIComponent(negocioConfig.nombre)}%20y%20deseo%20hacer%20una%20consulta.`;
                 boxWhatsapp.classList.remove("hidden");
             } else {
@@ -359,6 +377,7 @@
             const nombre = document.getElementById("gen-nombre").value.trim();
             const rubro = document.getElementById("gen-rubro").value;
             const whatsapp = document.getElementById("gen-whatsapp").value.trim();
+            const google = document.getElementById("gen-google").value.trim();
             const premio = document.getElementById("gen-premio").value.trim();
             const max = document.getElementById("gen-max").value;
             const color = document.getElementById("gen-color").value;
@@ -370,7 +389,7 @@
 
             const idUnico = nombre.toLowerCase().replace(/[^a-z0-9]/g, "-");
             const baseUrl = window.location.origin + window.location.pathname;
-            const urlFinal = `${baseUrl}?id=${idUnico}&nombre=${encodeURIComponent(nombre)}&rubro=${encodeURIComponent(rubro)}&whatsapp=${encodeURIComponent(whatsapp)}&max=${max}&premio=${encodeURIComponent(premio)}&color=${encodeURIComponent(color)}`;
+            const urlFinal = `${baseUrl}?id=${idUnico}&nombre=${encodeURIComponent(nombre)}&rubro=${encodeURIComponent(rubro)}&whatsapp=${encodeURIComponent(whatsapp)}&google=${encodeURIComponent(google)}&max=${max}&premio=${encodeURIComponent(premio)}&color=${encodeURIComponent(color)}`;
             
             document.getElementById("gen-resultado").value = urlFinal;
         }
